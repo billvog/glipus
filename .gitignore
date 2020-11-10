@@ -1,0 +1,10 @@
+# Build directories
+bin/
+bin-int/
+
+# Visual Studio project files
+.vs
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
