@@ -10,5 +10,6 @@ bin-int/
 *.vcxproj.user
 
 # Other
+Other/
 Glipus/x64/
 Updater/x64/
