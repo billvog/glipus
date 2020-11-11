@@ -26,7 +26,12 @@ namespace fs = std::filesystem;
 
 namespace Updater {
 	std::string VERSION_URL = "https://billvog.ga/downloads/get.php?file=glipus/version";
+	
+#ifdef GL_ARCH_64
 	std::string SETUP_URL = "https://billvog.ga/downloads/get.php?file=glipus/windows/64/Glipus_x64.exe";
+#else
+	std::string SETUP_URL = "https://billvog.ga/downloads/get.php?file=glipus/windows/86/Glipus_x64.exe";
+#endif
 
 	std::string DLL GetVersion();
 	int DLL DownloadUpdate(const std::string &path);

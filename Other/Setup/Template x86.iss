@@ -6,12 +6,12 @@
 #define MyAppPublisher "BILLVOG"
 #define MyAppURL "https://github.com/billvog/glipus"
 #define MyAppExeName "Glipus.exe"
-#define BinDir "E:\Code Projects\C++ Projects\Glipus\bin\Release64-windows-x86_64\Glipus"
+#define BinDir "E:\Code Projects\C++ Projects\Glipus\bin\Release32-windows-x86\Glipus"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{C0946576-0D2B-4858-BC02-CD56EF4D1B38}
+AppId={{530C92E7-92F8-4C30-9E54-87CDAAA7B9F9}
 VersionInfoVersion={#MyAppVersion}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
@@ -21,7 +21,6 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-ArchitecturesInstallIn64BitMode=x64
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
 UninstallDisplayIcon={app}\unins000.exe
@@ -33,7 +32,7 @@ InfoAfterFile=E:\Code Projects\C++ Projects\Glipus\Other\Setup\Update Log.rtf
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=E:\Code Projects\C++ Projects\Glipus\Other\Setup
-OutputBaseFilename=Glipus_x64
+OutputBaseFilename=Glipus_x86
 SetupIconFile=E:\Code Projects\C++ Projects\Glipus\Glipus\Assets\setup.ico
 Compression=lzma
 SolidCompression=yes

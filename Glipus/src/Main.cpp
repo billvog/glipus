@@ -1,14 +1,14 @@
-#include "cMain.h"
+#include "Main.h"
 
-wxBEGIN_EVENT_TABLE(cMain, wxFrame)
-EVT_MENU(10000, cMain::onOpenFileClicked)
-EVT_MENU(10001, cMain::onQuitFileClicked)
-EVT_MENU(10002, cMain::onGeneratePasswordToolsClicked)
-EVT_MENU(10003, cMain::onAboutHelpMenuClicked)
-EVT_CLOSE(cMain::onClose)
+wxBEGIN_EVENT_TABLE(Main, wxFrame)
+EVT_MENU(10000, Main::onOpenFileClicked)
+EVT_MENU(10001, Main::onQuitFileClicked)
+EVT_MENU(10002, Main::onGeneratePasswordToolsClicked)
+EVT_MENU(10003, Main::onAboutHelpMenuClicked)
+EVT_CLOSE(Main::onClose)
 wxEND_EVENT_TABLE()
 
-cMain::cMain(int argc, wxArrayString argv) : wxFrame(nullptr, wxID_ANY, wxT("Glipus")) {
+Main::Main(int argc, wxArrayString argv) : wxFrame(nullptr, wxID_ANY, "Glipus") {
 	this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
 	int HEIGHT = 210;
 
@@ -107,12 +107,10 @@ cMain::cMain(int argc, wxArrayString argv) : wxFrame(nullptr, wxID_ANY, wxT("Gli
 	this->DragAcceptFiles(true);
 
 	// Events
-	this->Connect(wxEVT_SET_FOCUS, wxFocusEventHandler(cMain::onWindowFocus), NULL, this);
-	
-	this->Connect(wxEVT_DROP_FILES, wxDropFilesEventHandler(cMain::onFileDropped), NULL, this);
-	m_PathField->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(cMain::onFileChanged), NULL, this);
-	
-	m_DoBtn->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(cMain::doButtonClicked), NULL, this);
+	this->Connect(wxEVT_SET_FOCUS, wxFocusEventHandler(Main::onWindowFocus), NULL, this);
+	this->Connect(wxEVT_DROP_FILES, wxDropFilesEventHandler(Main::onFileDropped), NULL, this);
+	m_PathField->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(Main::onFileChanged), NULL, this);
+	m_DoBtn->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(Main::doButtonClicked), NULL, this);
 
 	// Get command line args
 	if (argc > 1) {
@@ -123,16 +121,16 @@ cMain::cMain(int argc, wxArrayString argv) : wxFrame(nullptr, wxID_ANY, wxT("Gli
 	srand(time(NULL));
 }
 
-cMain::~cMain() {
-	this->Disconnect(wxEVT_SET_FOCUS, wxFocusEventHandler(cMain::onWindowFocus), NULL, this);
+Main::~Main() {
+	this->Disconnect(wxEVT_SET_FOCUS, wxFocusEventHandler(Main::onWindowFocus), NULL, this);
 	
-	m_PathField->Disconnect(wxEVT_DROP_FILES, wxDropFilesEventHandler(cMain::onFileDropped), NULL, this);
-	m_PathField->Disconnect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(cMain::onFileChanged), NULL, this);
+	m_PathField->Disconnect(wxEVT_DROP_FILES, wxDropFilesEventHandler(Main::onFileDropped), NULL, this);
+	m_PathField->Disconnect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(Main::onFileChanged), NULL, this);
 	
-	m_DoBtn->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(cMain::doButtonClicked), NULL, this);
+	m_DoBtn->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(Main::doButtonClicked), NULL, this);
 }
 
-std::string cMain::FormatTime(int s) {
+std::string Main::FormatTime(int s) {
 	int seconds, minutes;
 	seconds = s;
 	minutes = seconds / 60;
@@ -148,7 +146,7 @@ std::string cMain::FormatTime(int s) {
 	return std::string(sMinutes + ":" + sSeconds);
 }
 
-void cMain::CheckPath() {
+void Main::CheckPath() {
 	try {
 		fs::path fPath = fs::path(m_PathField->GetPath().ToStdString());
 		if (fs::exists(fPath) && fs::is_regular_file(fPath)) {
@@ -174,11 +172,11 @@ void cMain::CheckPath() {
 	}
 }
 
-void cMain::StartTimer() {
+void Main::StartTimer() {
 	ElapsedTime = 0;
 	timer = new wxTimer(this, 13001);
 	timer->Start(1000, false);
-	this->Connect(timer->GetId(), wxEVT_TIMER, wxTimerEventHandler(cMain::onTimerUpdate), NULL, this);
+	this->Connect(timer->GetId(), wxEVT_TIMER, wxTimerEventHandler(Main::onTimerUpdate), NULL, this);
 	
 	this->SetStatusText(std::string(), 0);
 	this->SetStatusText(std::string(), 1);
@@ -187,7 +185,7 @@ void cMain::StartTimer() {
 	UpdateControls();
 }
 
-void cMain::StopTimer() {
+void Main::StopTimer() {
 	if (timer == nullptr)
 		return;
 
@@ -198,7 +196,7 @@ void cMain::StopTimer() {
 	UpdateControls();
 }
 
-void cMain::onTimerUpdate(wxTimerEvent &e) {
+void Main::onTimerUpdate(wxTimerEvent &e) {
 	ElapsedTime++;
 
 	this->SetStatusText(*Progress, 0);
@@ -207,7 +205,7 @@ void cMain::onTimerUpdate(wxTimerEvent &e) {
 	e.Skip();
 }
 
-void cMain::SaveSettings() {
+void Main::SaveSettings() {
 	std::fstream config(ConfigFile, std::ios::out);
 	int position_x = 0, position_y = 0;
 	this->GetScreenPosition(&position_x, &position_y);
@@ -218,7 +216,7 @@ void cMain::SaveSettings() {
 	config.close();
 }
 
-bool cMain::DeleteFileWithEx(const std::string &file) {
+bool Main::DeleteFileWithEx(const std::string &file) {
 	try {
 		if (fs::exists(fs::path(file))) {
 			bool canDelete = fs::remove(fs::path(file));
@@ -234,7 +232,7 @@ bool cMain::DeleteFileWithEx(const std::string &file) {
 	return true;
 }
 
-void cMain::UpdateControls() {
+void Main::UpdateControls() {
 	m_PathField->Enable(!isWorking);
 	m_PasswordField->Enable(!isWorking);
 
@@ -251,14 +249,14 @@ void cMain::UpdateControls() {
 	}
 }
 
-void cMain::onWindowFocus(wxFocusEvent &e) {
+void Main::onWindowFocus(wxFocusEvent &e) {
 	if (!isWorking)
 		CheckPath();
 	
 	e.Skip();
 }
 
-void cMain::doButtonClicked(wxCommandEvent &e) {
+void Main::doButtonClicked(wxCommandEvent &e) {
 	if (isWorking) {
 		isCancelled = true;
 		return;
@@ -510,7 +508,7 @@ void cMain::doButtonClicked(wxCommandEvent &e) {
 	e.Skip();
 }
 
-void cMain::onFileDropped(wxDropFilesEvent &e) {
+void Main::onFileDropped(wxDropFilesEvent &e) {
 	if (isWorking)
 		return;
 
@@ -522,12 +520,12 @@ void cMain::onFileDropped(wxDropFilesEvent &e) {
 	e.Skip();
 }
 
-void cMain::onFileChanged(wxFileDirPickerEvent &e) {
+void Main::onFileChanged(wxFileDirPickerEvent &e) {
 	CheckPath();
 	e.Skip();
 }
 
-void cMain::OpenKeygenDialog() {
+void Main::OpenKeygenDialog() {
 	if (isWorking)
 		return;
 
@@ -621,13 +619,13 @@ void cMain::OpenKeygenDialog() {
 	}
 }
 
-void cMain::onGeneratePasswordToolsClicked(wxCommandEvent &e) {
+void Main::onGeneratePasswordToolsClicked(wxCommandEvent &e) {
 	OpenKeygenDialog();
 
 	e.Skip();
 }
 
-void cMain::onOpenFileClicked(wxCommandEvent &e) {
+void Main::onOpenFileClicked(wxCommandEvent &e) {
 	if (isWorking)
 		return;
 
@@ -640,7 +638,7 @@ void cMain::onOpenFileClicked(wxCommandEvent &e) {
 	e.Skip();
 }
 
-void cMain::onQuitFileClicked(wxCommandEvent &e) {
+void Main::onQuitFileClicked(wxCommandEvent &e) {
 	if (isWorking)
 		return;
 
@@ -648,25 +646,28 @@ void cMain::onQuitFileClicked(wxCommandEvent &e) {
 	e.Skip();
 }
 
-void cMain::onAboutHelpMenuClicked(wxCommandEvent &e) {
+void Main::onAboutHelpMenuClicked(wxCommandEvent &e) {
 	if (isWorking)
 		return;
 
+#ifdef GL_ARCH_64
+	int arch = 64;
+#else
 	int arch = 86;
-	if (sizeof(void *) == 8) { arch = 64; }
+#endif
 
 	wxAboutDialogInfo aboutInfo;
 	aboutInfo.SetName("Glipus (x" + std::to_string(arch) + ")");
 	aboutInfo.SetVersion(VER_FILEVERSION_STR);
-	aboutInfo.SetDescription("Glipus is a simple program to enc/decrypt your files, using XOR cipher, fast. It uses the wxWidgets framework with C++.\n\nYou can find the source-code at:");
+	aboutInfo.SetDescription("Glipus is an open-source encryption software that uses XOR cipher.\nIt helps you keep your files safe by simply clicking two buttons.");
 	aboutInfo.SetCopyright(VER_LEGALCOPYRIGHT_STR);
 	aboutInfo.SetWebSite(VER_COMPANYDOMAIN_STR);
 	aboutInfo.AddDeveloper(VER_COMPANYNAME_STR);
-	aboutInfo.SetLicence("Copyright 2020 BILLVOG\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software andassociated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, andto permit persons to whom the Software is furnished to do so, subject to the following conditions :\n\nThe above copyright notice andthis permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.");
+	aboutInfo.SetLicence("Glipus, an open-source encryption software that uses XOR cipher.\nCopyright (C) 2020 BILLVOG\n\nThis program is free software: you can redistribute it and /or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation, either version 3 of the License, or\n(at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with this program. If not, see <https://www.gnu.org/licenses/>.");
 	wxAboutBox(aboutInfo, this);
 }
 
-void cMain::onClose(wxCloseEvent &e) {
+void Main::onClose(wxCloseEvent &e) {
 	if (isWorking) {
 		int ans = wxMessageBox("Glip is working, are you sure you want to quit now?", "Confirm", wxYES | wxNO_DEFAULT);
 		if (ans == wxNO) {

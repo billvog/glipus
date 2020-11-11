@@ -15,10 +15,10 @@
 #include "Glip.h"
 #include "version.h"
 
-class cMain : public wxFrame {
+class Main : public wxFrame {
 public:
-	cMain(int argc, wxArrayString argv);
-	~cMain();
+	Main(int argc, wxArrayString argv);
+	~Main();
 
 private:
 	wxMenuBar *menuBar;

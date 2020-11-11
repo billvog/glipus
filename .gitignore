@@ -1,4 +1,4 @@
-# Build directories
+# Bin directories
 bin/
 bin-int/
 
@@ -8,3 +8,7 @@ bin-int/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+# Other
+Glipus/x64/
+Updater/x64/

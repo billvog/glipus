@@ -22,12 +22,11 @@ namespace Updater {
 		curl_easy_setopt(curl, CURLOPT_URL, VERSION_URL.c_str());
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data_to_string);
 		curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
-
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-		CURLcode result = curl_easy_perform(curl);
+		
+		int result = (int) curl_easy_perform(curl);
 
 		curl_easy_cleanup(curl);
-
 		curl_global_cleanup();
 
 		return readBuffer;
@@ -52,14 +51,13 @@ namespace Updater {
 		}
 
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
-		CURLcode result = curl_easy_perform(curl);
+		int result = (int) curl_easy_perform(curl);
 
 		fclose(file);
 
 		curl_easy_cleanup(curl);
-
 		curl_global_cleanup();
 
-		return (int) result;
+		return result;
     }
 }
