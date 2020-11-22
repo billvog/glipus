@@ -1,5 +1,5 @@
 # Glipus, to secure your files.
-Glipus is an open-source encryption software that uses XOR cipher.
+Glipus is an open-source encryption software that uses AES 256-bit encryption.
 It helps you keep your files safe by simply clicking two buttons.
 
 Download from https://billvog.ga/#software
@@ -17,4 +17,4 @@ vendor/bin/premake/premake5 xcode4
 ```
 For additional information, see https://premake.github.io
 
-Glipus uses **lubcurl** (throught vcpkg) and **wxWidgets**. Be sure to install them before compiling.
+Glipus uses **lubcurl**, **Crypto++** (throught vcpkg) and **wxWidgets**. Be sure to install them before compiling.
