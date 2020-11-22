@@ -11,7 +11,7 @@ namespace Updater {
 
 UpdateDlg::UpdateDlg(wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style): wxDialog(parent, id, title, pos, size, style) {
 	LatestVersion = Updater::GetVersion();
-	SetupFile = fs::path(wxStandardPaths::Get().GetExecutablePath().ToStdString()).parent_path().string() + "/Setup/Glipus_x64.exe";
+	SetupFile = GetSetupFilePath();
 
 	this->SetSizeHints(wxDefaultSize, wxDefaultSize);
 
@@ -63,7 +63,7 @@ UpdateDlg::~UpdateDlg() {
 }
 
 const std::string UpdateDlg::GetSetupFilePath() {
-	return fs::path(wxStandardPaths::Get().GetExecutablePath().ToStdString()).parent_path().string() + "/Setup/Glipus_x64.exe";
+	return fs::path(wxStandardPaths::Get().GetTempDir().ToStdString() + "/glipus-latest-setup.exe").string();
 }
 
 void UpdateDlg::OnCancelButtonClicked(wxCommandEvent &e) {
@@ -84,7 +84,7 @@ void UpdateDlg::OnClose(wxCloseEvent &e) {
 }
 
 bool UpdateDlg::StartUpdate() {
-	if (LatestVersion.length() > 0 && LatestVersion != VER_FILEVERSION_STR) {
+	if (LatestVersion.length() > 0 && LatestVersion == VER_FILEVERSION_STR) {
 		int reponse = wxMessageBox("There is a new version of Glipus available. Install it?\n\nInstalled: " + wxString(VER_FILEVERSION_STR) + "\nLatest: " + LatestVersion, "Updater", wxYES_NO | wxICON_QUESTION);
 		if (reponse == wxYES) {
 			this->Show();
@@ -150,5 +150,5 @@ bool UpdateDlg::StartUpdate() {
 }
 
 void UpdateDlg::ClearUpdate() {
-	fs::remove_all(fs::path(GetSetupFilePath()).parent_path());
+	fs::remove(GetSetupFilePath());
 }

@@ -40,7 +40,7 @@ Main::Main(int argc, wxArrayString argv) : wxFrame(nullptr, wxID_ANY, "Glipus") 
 	keygenToolsMenu->SetBitmap(wxIcon("KEY_ICON1", wxBITMAP_TYPE_ICO_RESOURCE, 16, 16));
 
 	wxMenuItem *checkForUpdateHelpMenu = new wxMenuItem(helpMenu, 10003, "&Check for Update", wxEmptyString);
-	
+
 	wxMenuItem *aboutHelpMenu = new wxMenuItem(helpMenu, 10004, "&About", wxEmptyString);
 	aboutHelpMenu->SetBitmap(wxArtProvider::GetIcon(wxART_INFORMATION, wxART_OTHER, IconSize));
 
