@@ -33,6 +33,9 @@ namespace Updater {
 	std::string SETUP_URL = "https://billvog.ga/downloads/get.php?file=glipus/windows/86/Glipus_x64.exe";
 #endif
 
+	int DLL Progress;
+	bool DLL isCancelled;
+
 	std::string DLL GetVersion();
 	int DLL DownloadUpdate(const std::string &path);
 }

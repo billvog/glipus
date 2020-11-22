@@ -1,11 +1,14 @@
 workspace "Glipus"
-	configurations { "Debug32", "Release32", "Debug64", "Release64" }
+	configurations { "Debug", "Release" }
+	platforms { "Win32", "Win64" }
 
-	filter "configurations:*32"
+	filter "platforms:Win32"
+		system "Windows"
 		architecture "x86"
 		defines { "GL_ARCH_86" }
 
-	filter "configurations:*64"
+	filter "platforms:Win64"
+		system "Windows"
 		architecture "x86_64"
 		defines { "GL_ARCH_64" }
 
@@ -22,28 +25,30 @@ project "Glipus"
 	files {
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/Dialogs/**.cpp",
+		"%{prj.name}/src/Dialogs/**.h",
 		"%{prj.name}/**.rc",
-		"%{prj.name}/assets/**.ico"
+		"%{prj.name}/assets/**.ico",
 	}
 
 	includedirs {
 		"$(WXWIN)/include/msvc",
 		"$(WXWIN)/include",
-		"%{wks.location}/Updater/src/"
+		"%{wks.location}/Updater/src/",
 	}
 
 	links {
 		"Updater"
 	}
 
-	filter "configurations:*64"
+	filter "platforms:Win64"
 		libdirs {
-			"$(WXWIN)/lib/vc_x64_dll"
+			"$(WXWIN)/lib/vc_x64_dll",
 		}
 
-	filter "configurations:*32"
+	filter "platforms:Win32"
 		libdirs {
-			"$(WXWIN)/lib/vc_dll"
+			"$(WXWIN)/lib/vc_dll",
 		}
 
 	filter "system:windows"
@@ -55,33 +60,33 @@ project "Glipus"
 			"GL_PLATFORM_WINDOWS"
 		}
 
-	filter "configurations:Debug*"
+	filter "configurations:Debug"
 		symbols "On"
 		defines { "GL_CONFIG_DEBUG" }
 
-	filter {"system:windows", "configurations:Debug64"}
+	filter { "platforms:Win64", "configurations:Debug" }
 		postbuildcommands {
 			("{COPY} \"$(WXWIN)/lib/vc_x64_dll/wxbase314ud_vc_x64_custom.dll\" %{cfg.targetdir}"),
 			("{COPY} \"$(WXWIN)/lib/vc_x64_dll/wxmsw314ud_core_vc_x64_custom.dll\" %{cfg.targetdir}"),
 		}
 
-	filter {"system:windows", "configurations:Debug32"}
+	filter { "platforms:Win32", "configurations:Debug"}
 		postbuildcommands {
 			("{COPY} \"$(WXWIN)/lib/vc_dll/wxbase314ud_vc_custom.dll\" %{cfg.targetdir}"),
 			("{COPY} \"$(WXWIN)/lib/vc_dll/wxmsw314ud_core_vc_custom.dll\" %{cfg.targetdir}"),
 		}
 
-	filter "configurations:Release*"
+	filter "configurations:Release"
 		optimize "On"
 		defines { "GL_CONFIG_RELEASE" }
 
-	filter {"system:windows", "configurations:Release64"}
+	filter { "platforms:Win64", "configurations:Release" }
 		postbuildcommands {
 			("{COPY} \"$(WXWIN)/lib/vc_x64_dll/wxbase314u_vc_x64_custom.dll\" %{cfg.targetdir}"),
 			("{COPY} \"$(WXWIN)/lib/vc_x64_dll/wxmsw314u_core_vc_x64_custom.dll\" %{cfg.targetdir}"),
 		}
 
-	filter {"system:windows", "configurations:Release32"}
+	filter { "platforms:Win32", "configurations:Release" }
 		postbuildcommands {
 			("{COPY} \"$(WXWIN)/lib/vc_dll/wxbase314u_vc_custom.dll\" %{cfg.targetdir}"),
 			("{COPY} \"$(WXWIN)/lib/vc_dll/wxmsw314u_core_vc_custom.dll\" %{cfg.targetdir}"),
@@ -97,7 +102,8 @@ project "Updater"
 
 	files {
 		"%{prj.name}/src/**.cpp",
-		"%{prj.name}/src/**.h"
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/**.rc"
 	}
 
 	filter "system:windows"
@@ -113,10 +119,10 @@ project "Updater"
 			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Glipus");
 		}
 
-	filter "configurations:Debug*"
+	filter "configurations:Debug"
 		symbols "On"
 		defines { "GL_CONFIG_DEBUG" }
 
-	filter "configurations:Release*"
+	filter "configurations:Release"
 		optimize "On"
 		defines { "GL_CONFIG_RELEASE" }
