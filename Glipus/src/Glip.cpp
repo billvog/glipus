@@ -47,10 +47,6 @@ namespace Glip {
         decryption.SetKeyWithIV(key, CryptoPP::AES::MAX_KEYLENGTH, key + CryptoPP::AES::MAX_KEYLENGTH);
 
         std::stringstream ss;
-        /*CryptoPP::FileSource Stream(input_s, false, new CryptoPP::StreamTransformationFilter(
-            decryption, new CryptoPP::FileSink(ss)
-        ));*/
-
         Stream.Attach(new CryptoPP::StreamTransformationFilter(
             decryption, new CryptoPP::FileSink(ss)
         ));
@@ -61,7 +57,7 @@ namespace Glip {
         return (ss.str() == "Glipus");
     }
 
-    int Encrypt(const std::string &file, const std::string &password, const std::string &output, std::string *log, int *progress) {
+    int Encrypt(const std::string &file, const std::string &password, const std::string &output, std::string *log, int *progress, double *processedBytes) {
         std::fstream input_s(file, std::ios::in | std::ios::binary);
         if (!input_s.is_open()) {
             *log = "File \"" + file + "\" cannot be opened";
@@ -76,7 +72,6 @@ namespace Glip {
         
         CryptoPP::SecByteBlock key(CryptoPP::AES::MAX_KEYLENGTH + CryptoPP::AES::BLOCKSIZE);
         
-        //std::string iv(AES_IV);
         std::string iv(RandPassword(16, true, true, false));
 
         CryptoPP::HKDF<CryptoPP::SHA256> hkdf;
@@ -95,10 +90,10 @@ namespace Glip {
             encryption, new CryptoPP::FileSink(output_s)
         ));
 
-        double FileSize = (double)fs::file_size(file);
-        double ProcessedBytes = 0;
+        double FileSize = (double) fs::file_size(file);
+        int ProcessedBytes = 0;
 
-        while (FileSize > ProcessedBytes) {
+        while (FileSize > *processedBytes) {
             if (*log == "cmd-cancel") {
                 return 1;
             }
@@ -109,7 +104,9 @@ namespace Glip {
             Stream.Pump(AES_BLOCK_SIZE);
             ProcessedBytes += AES_BLOCK_SIZE;
 
-            *progress = (int)((ProcessedBytes / FileSize) * 100);
+            *processedBytes += AES_BLOCK_SIZE;
+
+            *progress = std::clamp((int)((ProcessedBytes / FileSize) * 100), 0, 100);
         }
 
         input_s.close();
@@ -119,7 +116,7 @@ namespace Glip {
         return 0;
     }
 
-    int Decrypt(const std::string &file, const std::string &password, const std::string &output, std::string *log, int *progress) {
+    int Decrypt(const std::string &file, const std::string &password, const std::string &output, std::string *log, int *progress, double *processedBytes) {
         std::fstream input_s(file, std::ios::in | std::ios::binary);
         if (!input_s.is_open()) {
             *log = "File \"" + file + "\" cannot be opened";
@@ -169,10 +166,12 @@ namespace Glip {
             Stream.Pump(AES_BLOCK_SIZE);
             ProcessedBytes += AES_BLOCK_SIZE;
 
+            *processedBytes += AES_BLOCK_SIZE;
+
             output_s << ss.str();
             ss.str("");
 
-            *progress = (int)((ProcessedBytes / FileSize) * 100);
+            *progress = std::clamp((int)((ProcessedBytes / FileSize) * 100), 0, 100);
         }
 
         input_s.close();

@@ -1,24 +1,21 @@
 #include "Main.h"
 
 wxBEGIN_EVENT_TABLE(Main, wxFrame)
-EVT_MENU(10000, Main::onOpenFileClicked)
-EVT_MENU(10001, Main::onQuitFileClicked)
-EVT_MENU(10002, Main::onGeneratePasswordToolsClicked)
-EVT_MENU(10003, Main::onCheckForUpdateHelpMenuClicked)
-EVT_MENU(10004, Main::onAboutHelpMenuClicked)
+EVT_MENU(10000, Main::OnOpenFileClicked)
+EVT_MENU(10001, Main::OnQuitFileClicked)
+EVT_MENU(11001, Main::OnGeneratePasswordToolsClicked)
+EVT_MENU(12001, Main::OnCheckForUpdateHelpMenuClicked)
+EVT_MENU(12002, Main::OnAboutHelpMenuClicked)
 EVT_CLOSE(Main::OnClose)
 wxEND_EVENT_TABLE()
 
-#define WINDOW_HEIGHT 210
-
 Main::Main(int argc, wxArrayString argv) : wxFrame(nullptr, wxID_ANY, "Glipus") {
 	this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
-	this->SetIcon(wxIcon("IDI_ICON1"));
+	this->SetIcon(wxIcon("1_MAINICON"));
 	
 	LoadSettings();
 
-	this->SetMinSize(wxSize(400, WINDOW_HEIGHT));
-	this->SetMaxSize(wxSize(1000, WINDOW_HEIGHT));
+	this->SetMinSize(wxSize(400, 205));
 	this->SetWindowStyle(wxCAPTION | wxCLOSE_BOX | wxICONIZE | wxMINIMIZE_BOX | wxSYSTEM_MENU | wxCLIP_CHILDREN | wxRESIZE_BORDER);
 	this->CreateStatusBar(2);
 
@@ -36,18 +33,21 @@ Main::Main(int argc, wxArrayString argv) : wxFrame(nullptr, wxID_ANY, "Glipus") 
 	wxMenuItem *quitFileMenu = new wxMenuItem(fileMenu, 10001, "&Quit\tCtrl+Q", wxEmptyString);
 	quitFileMenu->SetBitmap(wxArtProvider::GetIcon(wxART_QUIT, wxART_OTHER, IconSize));
 
-	wxMenuItem *keygenToolsMenu = new wxMenuItem(toolsMenu, 10002, "&Generate Password", wxEmptyString);
-	keygenToolsMenu->SetBitmap(wxIcon("KEY_ICON1", wxBITMAP_TYPE_ICO_RESOURCE, 16, 16));
+	wxMenuItem *keygenToolsMenu = new wxMenuItem(toolsMenu, 11001, "&Password Generator...", wxEmptyString);
+	keygenToolsMenu->SetBitmap(wxIcon("3_KEY_ICON", wxBITMAP_TYPE_ICO_RESOURCE, 16, 16));
 
-	wxMenuItem *checkForUpdateHelpMenu = new wxMenuItem(helpMenu, 10003, "&Check for Update", wxEmptyString);
+	wxMenuItem *checkForUpdateHelpMenu = new wxMenuItem(helpMenu, 12001, "&Check for Updates", wxEmptyString);
+	checkForUpdateHelpMenu->SetBitmap(wxIcon("4_UPDATE_ICON", wxBITMAP_TYPE_ICO_RESOURCE, 14, 14));
 
-	wxMenuItem *aboutHelpMenu = new wxMenuItem(helpMenu, 10004, "&About", wxEmptyString);
+	wxMenuItem *aboutHelpMenu = new wxMenuItem(helpMenu, 12002, "&About", wxEmptyString);
 	aboutHelpMenu->SetBitmap(wxArtProvider::GetIcon(wxART_INFORMATION, wxART_OTHER, IconSize));
 
 	fileMenu->Append(openFileMenu);
 	fileMenu->AppendSeparator();
 	fileMenu->Append(quitFileMenu);
+
 	toolsMenu->Append(keygenToolsMenu);
+
 	helpMenu->Append(checkForUpdateHelpMenu);
 	helpMenu->AppendSeparator();
 	helpMenu->Append(aboutHelpMenu);
@@ -77,15 +77,15 @@ Main::Main(int argc, wxArrayString argv) : wxFrame(nullptr, wxID_ANY, "Glipus") 
 	sizer->Add(m_Label2, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALL | wxEXPAND | wxALIGN_CENTER_VERTICAL, BorderSize);
 
 	m_PasswordField = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PASSWORD);
-	m_PasswordField->SetMaxLength(128);
 	sizer->Add(m_PasswordField, wxGBPosition(1, 1), wxGBSpan(1, 1), wxALL | wxEXPAND, BorderSize);
 
-	m_DoBtn = new wxButton(this, wxID_ANY, wxT("Encrypt"), wxDefaultPosition, wxSize(-1, 30), 0);
+	m_DoBtn = new wxButton(this, wxID_ANY, wxT("Encrypt"), wxDefaultPosition, wxDefaultSize, 0);
 	m_DoBtn->SetFont(wxFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
 	m_DoBtn->Enable(false);
 	sizer->Add(m_DoBtn, wxGBPosition(2, 0), wxGBSpan(1, 2), wxALL | wxEXPAND, BorderSize);
 
 	sizer->AddGrowableCol(1);
+	sizer->AddGrowableRow(2);
 
 	this->SetSizer(sizer);
 	this->Layout();
@@ -97,17 +97,17 @@ Main::Main(int argc, wxArrayString argv) : wxFrame(nullptr, wxID_ANY, "Glipus") 
 	// Events
 	this->Connect(wxEVT_IDLE, wxIdleEventHandler(Main::OnIdleEvent), NULL, this);
 	this->Connect(wxEVT_SET_FOCUS, wxFocusEventHandler(Main::OnWindowFocus), NULL, this);
-	this->Connect(wxEVT_DROP_FILES, wxDropFilesEventHandler(Main::onFileDropped), NULL, this);
+	this->Connect(wxEVT_DROP_FILES, wxDropFilesEventHandler(Main::OnFileDropped), NULL, this);
 	
-	m_PathField->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(Main::onFileChanged), NULL, this);
+	m_PathField->Connect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(Main::OnFileChanged), NULL, this);
 	m_DoBtn->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(Main::DoButtonClicked), NULL, this);
 }
 
 Main::~Main() {
 	this->Disconnect(wxEVT_SET_FOCUS, wxFocusEventHandler(Main::OnWindowFocus), NULL, this);
 	
-	m_PathField->Disconnect(wxEVT_DROP_FILES, wxDropFilesEventHandler(Main::onFileDropped), NULL, this);
-	m_PathField->Disconnect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(Main::onFileChanged), NULL, this);
+	m_PathField->Disconnect(wxEVT_DROP_FILES, wxDropFilesEventHandler(Main::OnFileDropped), NULL, this);
+	m_PathField->Disconnect(wxEVT_COMMAND_FILEPICKER_CHANGED, wxFileDirPickerEventHandler(Main::OnFileChanged), NULL, this);
 	
 	m_DoBtn->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(Main::DoButtonClicked), NULL, this);
 }
@@ -121,8 +121,9 @@ void Main::GetArguments(int argc, wxArrayString argv) {
 				return;
 			}
 			else {
+				ShowEncryptionDlg = true;
+
 				m_PathField->SetPath(argv[1]);
-				CheckPath();
 				return;
 			}
 		}
@@ -152,7 +153,7 @@ void Main::CheckPath() {
 				Encrypt = true;
 			}
 
-			menuBar->Enable(10002, Encrypt);
+			menuBar->Enable(11001, Encrypt);
 			m_DoBtn->Enable(true);
 		}
 		else {
@@ -181,36 +182,39 @@ bool Main::DeleteFileWithEx(const std::string &file) {
 }
 
 void Main::LoadSettings() {
-	ConfigFile = wxStandardPaths::Get().GetUserConfigDir() + "\\BILLVOG\\Glipus\\config.ini";
-	std::fstream config(ConfigFile, std::ios::in);
-	if (config.is_open()) {
-		int position_x = 0, position_y = 0;
-		int size_x = 0;
+	wxRegKey RegKey(wxRegKey::HKCU, "Software\\BILLVOG\\Glipus\\Window");
+	if (RegKey.Exists()) {
+		long position_x = 0, position_y = 0;
+		long size_x = 0, size_y = 0;
 
-		std::string buffer((std::istreambuf_iterator<char>(config)), std::istreambuf_iterator<char>());
-		config.close();
-
-		int returned = sscanf(buffer.c_str(), "pos: %d x %d\nsize: %d", &position_x, &position_y, &size_x);
+		RegKey.QueryValue("PositionX", &position_x);
+		RegKey.QueryValue("PositionY", &position_y);
+		RegKey.QueryValue("SizeX", &size_x);
+		RegKey.QueryValue("SizeY", &size_y);
 
 		this->SetPosition(wxPoint(position_x, position_y));
-		this->SetSize(wxSize(size_x, WINDOW_HEIGHT));
+		this->SetSize(wxSize(size_x, size_y));
 	}
 	else {
-		fs::create_directories(fs::path(ConfigFile).remove_filename());
+		this->SetSize(wxSize(600, 210));
 		this->CenterOnScreen();
-		this->SetSize(wxSize(400, WINDOW_HEIGHT));
 	}
 }
 
 void Main::SaveSettings() {
-	std::fstream config(ConfigFile, std::ios::out);
+	wxRegKey MainKey(wxRegKey::HKCU, "Software\\BILLVOG\\Glipus");
+	MainKey.Create();
+
 	int position_x = 0, position_y = 0;
 	this->GetScreenPosition(&position_x, &position_y);
-	int size_x = this->GetSize().x;
+	int size_x = this->GetSize().x, size_y = this->GetSize().y;
 
-	config << "pos:" << position_x << "x" << position_y << std::endl;
-	config << "size:" << size_x << std::endl;
-	config.close();
+	wxRegKey MainWindowKey(wxRegKey::HKCU, "Software\\BILLVOG\\Glipus\\Window");
+	MainWindowKey.Create();
+	MainWindowKey.SetValue("PositionX", position_x);
+	MainWindowKey.SetValue("PositionY", position_y);
+	MainWindowKey.SetValue("SizeX", size_x);
+	MainWindowKey.SetValue("SizeY", size_y);
 }
 
 void Main::OnIdleEvent(wxIdleEvent &e) {
@@ -228,7 +232,7 @@ void Main::OnIdleEvent(wxIdleEvent &e) {
 	EncryptDlg *dialog = new EncryptDlg(nullptr, wxID_ANY);
 	dialog->SetInfo(m_PathField->GetPath().ToStdString(), m_PasswordField->GetLabelText().ToStdString());
 	dialog->Show();
-	dialog->Centre(wxBOTH);
+	dialog->Center();
 	dialog->Start();
 	
 	e.Skip();
@@ -259,7 +263,7 @@ void Main::DoButtonClicked(wxCommandEvent &e) {
 	e.Skip();
 }
 
-void Main::onFileDropped(wxDropFilesEvent &e) {
+void Main::OnFileDropped(wxDropFilesEvent &e) {
 	if (e.GetNumberOfFiles() > 0) {
 		m_PathField->SetPath(e.GetFiles()[0]);
 		CheckPath();
@@ -268,15 +272,15 @@ void Main::onFileDropped(wxDropFilesEvent &e) {
 	e.Skip();
 }
 
-void Main::onFileChanged(wxFileDirPickerEvent &e) {
+void Main::OnFileChanged(wxFileDirPickerEvent &e) {
 	CheckPath();
 	e.Skip();
 }
 
 void Main::OpenKeygenDialog() {
 	if (Encrypt) {
-		wxDialog *dialog = new wxDialog(this, wxID_ANY, wxT("Keygen"), wxDefaultPosition, wxSize(480, 115), wxDEFAULT_DIALOG_STYLE);
-		dialog->SetIcon(wxIcon("KEY_ICON1"));
+		wxDialog *dialog = new wxDialog(this, wxID_ANY, wxT("Keygen"), wxDefaultPosition, wxSize(480, 130), wxDEFAULT_DIALOG_STYLE);
+		dialog->SetIcon(wxIcon("3_KEY_ICON"));
 
 		wxBoxSizer *panelSizer = new wxBoxSizer(wxHORIZONTAL);
 		wxPanel *panel = new wxPanel(dialog, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
@@ -289,7 +293,7 @@ void Main::OpenKeygenDialog() {
 		wxStaticText *m_Label01 = new wxStaticText(panel, wxID_ANY, wxT("Length"), wxDefaultPosition, wxDefaultSize, 0);
 		sizer->Add(m_Label01, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER | wxALL | wxEXPAND, 3);
 
-		wxSpinCtrl *m_SpinLength = new wxSpinCtrl(panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 4, 128, 14);
+		wxSpinCtrl *m_SpinLength = new wxSpinCtrl(panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 2048, 16);
 		sizer->Add(m_SpinLength, wxGBPosition(0, 1), wxGBSpan(1, 1), wxALL | wxEXPAND, 3);
 
 		wxStaticText *m_Label02 = new wxStaticText(panel, wxID_ANY, wxT("Letters"), wxDefaultPosition, wxDefaultSize, 0);
@@ -314,11 +318,13 @@ void Main::OpenKeygenDialog() {
 		m_ContainSpecialChar->Set3StateValue(wxCheckBoxState::wxCHK_CHECKED);
 		sizer->Add(m_ContainSpecialChar, wxGBPosition(0, 7), wxGBSpan(1, 1), wxALL | wxEXPAND, 3);
 
-		wxButton *m_GenButton = new wxButton(panel, wxID_OK, wxT("Generate"), wxDefaultPosition);
-		sizer->Add(m_GenButton, wxGBPosition(1, 0), wxGBSpan(1, 4), wxALL | wxEXPAND, 3);
+		sizer->Add(0, 10, wxGBPosition(1, 0), wxGBSpan(1, 1), wxEXPAND, 5);
 
-		wxButton *m_CancelButton = new wxButton(panel, wxID_CANCEL, wxT("Cancel"), wxDefaultPosition);
-		sizer->Add(m_CancelButton, wxGBPosition(1, 4), wxGBSpan(1, 4), wxALL | wxEXPAND, 3);
+		wxButton *m_GenButton = new wxButton(panel, wxID_OK, wxT("Generate"), wxDefaultPosition, wxSize(-1, 25));
+		sizer->Add(m_GenButton, wxGBPosition(2, 0), wxGBSpan(1, 4), wxALL | wxEXPAND, 3);
+
+		wxButton *m_CancelButton = new wxButton(panel, wxID_CANCEL, wxT("Cancel"), wxDefaultPosition, wxSize(-1, 25));
+		sizer->Add(m_CancelButton, wxGBPosition(2, 4), wxGBSpan(1, 4), wxALL | wxEXPAND, 3);
 
 		sizer->AddGrowableCol(1);
 
@@ -364,12 +370,12 @@ void Main::OpenKeygenDialog() {
 	}
 }
 
-void Main::onGeneratePasswordToolsClicked(wxCommandEvent &e) {
+void Main::OnGeneratePasswordToolsClicked(wxCommandEvent &e) {
 	OpenKeygenDialog();
 	e.Skip();
 }
 
-void Main::onOpenFileClicked(wxCommandEvent &e) {
+void Main::OnOpenFileClicked(wxCommandEvent &e) {
 	wxString DefaultDir = fs::path(m_PathField->GetPath().ToStdString()).parent_path();
 	wxString DefaultFile = fs::path(m_PathField->GetPath().ToStdString()).filename();
 
@@ -382,19 +388,19 @@ void Main::onOpenFileClicked(wxCommandEvent &e) {
 	e.Skip();
 }
 
-void Main::onQuitFileClicked(wxCommandEvent &e) {
+void Main::OnQuitFileClicked(wxCommandEvent &e) {
 	this->Close();
 	e.Skip();
 }
 
-void Main::onCheckForUpdateHelpMenuClicked(wxCommandEvent &e) {
+void Main::OnCheckForUpdateHelpMenuClicked(wxCommandEvent &e) {
 	UpdateDlg *updater = new UpdateDlg(this);
 	if (!updater->StartUpdate()) {
 		updater->ClearUpdate();
 	}
 }
 
-void Main::onAboutHelpMenuClicked(wxCommandEvent &e) {
+void Main::OnAboutHelpMenuClicked(wxCommandEvent &e) {
 #ifdef GL_ARCH_64
 	int Architecture = 64;
 #else

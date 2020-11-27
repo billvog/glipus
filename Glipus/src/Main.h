@@ -9,6 +9,8 @@
 #include <wx/aboutdlg.h>
 #include <wx/filepicker.h>
 
+#include <wx/msw/registry.h>
+
 #include "Glip.h"
 #include "version.h"
 
@@ -29,7 +31,6 @@ private:
 	wxTextCtrl *m_PasswordField;
 	wxButton *m_DoBtn;
 
-	std::string ConfigFile;
 	bool Encrypt = true, ShowEncryptionDlg = false;
 
 	void CheckPath();
@@ -49,14 +50,14 @@ protected:
 
 	void DoButtonClicked(wxCommandEvent &e);
 
-	void onGeneratePasswordToolsClicked(wxCommandEvent &e);
-	void onOpenFileClicked(wxCommandEvent &e);
+	void OnOpenFileClicked(wxCommandEvent &e);
+	void OnQuitFileClicked(wxCommandEvent &e);
 
-	void onFileDropped(wxDropFilesEvent &e);
-	void onFileChanged(wxFileDirPickerEvent &e);
+	void OnGeneratePasswordToolsClicked(wxCommandEvent &e);
 
-	void onQuitFileClicked(wxCommandEvent &e);
+	void OnFileDropped(wxDropFilesEvent &e);
+	void OnFileChanged(wxFileDirPickerEvent &e);
 
-	void onCheckForUpdateHelpMenuClicked(wxCommandEvent &e);
-	void onAboutHelpMenuClicked(wxCommandEvent &e);
+	void OnCheckForUpdateHelpMenuClicked(wxCommandEvent &e);
+	void OnAboutHelpMenuClicked(wxCommandEvent &e);
 };

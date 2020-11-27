@@ -84,7 +84,7 @@ void UpdateDlg::OnClose(wxCloseEvent &e) {
 }
 
 bool UpdateDlg::StartUpdate() {
-	if (LatestVersion.length() > 0 && LatestVersion == VER_FILEVERSION_STR) {
+	if (LatestVersion.length() > 0 && LatestVersion != VER_FILEVERSION_STR) {
 		int reponse = wxMessageBox("There is a new version of Glipus available. Install it?\n\nInstalled: " + wxString(VER_FILEVERSION_STR) + "\nLatest: " + LatestVersion, "Updater", wxYES_NO | wxICON_QUESTION);
 		if (reponse == wxYES) {
 			this->Show();
@@ -143,7 +143,7 @@ bool UpdateDlg::StartUpdate() {
 		}
 	}
 	else {
-		wxMessageBox("You have the latest version of Glipus installed!", "Updater", wxICON_INFORMATION);
+		wxMessageBox("You have the latest version of Glipus installed.\n\nInstalled: " + wxString(VER_FILEVERSION_STR), "Updater", wxICON_INFORMATION);
 	}
 	
 	return false;

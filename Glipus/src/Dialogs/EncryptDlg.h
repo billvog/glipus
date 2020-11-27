@@ -11,7 +11,7 @@
 
 class EncryptDlg : public wxFrame {
 public:
-	EncryptDlg(wxWindow *parent, wxWindowID id = wxID_ANY, const wxString &title = wxT("Please wait..."), const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxSize(500, 240), long style = wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxSYSTEM_MENU | wxICONIZE | wxRESIZE_BORDER);
+	EncryptDlg(wxWindow *parent, wxWindowID id = wxID_ANY, const wxString &title = wxT("Please wait..."), const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxSize(500, 265), long style = wxCAPTION | wxCLOSE_BOX | wxMINIMIZE_BOX | wxSYSTEM_MENU | wxICONIZE | wxRESIZE_BORDER);
 	~EncryptDlg();
 
 	void SetInfo(const std::string &path, const std::string &password);
@@ -25,7 +25,8 @@ private:
 
 	std::string *Log = nullptr;
 	int *Progress = nullptr;
-	int ElapsedTime = 0;
+	double *ProcessedBytes = nullptr, RemainingBytes = 0;
+	int ElapsedTime = 0, RemainingTime = 0;
 
 	bool isWorking = false, isCancelled = false, isPaused = false;
 
@@ -33,7 +34,7 @@ private:
 
 	void StartTimer();
 	void StopTimer();
-	void onTimerUpdate(wxTimerEvent &e);
+	void OnTimerUpdate(wxTimerEvent &e);
 
 	bool DeleteFileWithEx(const std::string &file);
 
@@ -44,13 +45,15 @@ protected:
 	wxStaticText *m_ProgressText;
 	wxGauge *m_ProgressBar;
 	wxStaticLine *m_seperator;
-	wxStaticText *m_TimeLabel;
-	wxStaticText *m_ElapseTimeText;
+	wxStaticText *m_ElapsedTimeLabel;
+	wxStaticText *m_ElapsedTimeText;
+	wxStaticText *m_RemainingTimeLabel;
+	wxStaticText *m_RemainingTimeText;
 	wxButton *m_PauseButton;
 	wxButton *m_CancelButton;
 
 	wxTimer *timer = nullptr;
-	wxAppProgressIndicator *progressIndicator;
+	wxAppProgressIndicator *ProgressIndicator;
 
 	void OnPauseClicked(wxCommandEvent &e);
 	void OnCancelClicked(wxCommandEvent &e);

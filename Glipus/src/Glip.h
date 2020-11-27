@@ -1,4 +1,5 @@
 #pragma once
+#include <future>
 #include <random>
 #include <string>
 #include <sstream>
@@ -20,6 +21,6 @@ namespace fs = std::filesystem;
 namespace Glip {
 	std::string RandPassword(int length, bool letters, bool numbers, bool special);
 	bool CheckPassword(const std::string &file, const std::string &password);
-	int Encrypt(const std::string &file, const std::string &password, const std::string &output, std::string *log, int *progress);
-	int Decrypt(const std::string &file, const std::string &password, const std::string &output, std::string *log, int *progress);
+	int Encrypt(const std::string &file, const std::string &password, const std::string &output, std::string *log, int *progress, double *processedBytes);
+	int Decrypt(const std::string &file, const std::string &password, const std::string &output, std::string *log, int *progress, double *processedBytes);
 }

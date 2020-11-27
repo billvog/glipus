@@ -3,14 +3,15 @@
 EncryptDlg::EncryptDlg(wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style) {
 	this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
 	this->SetSizeHints(wxDefaultSize, wxDefaultSize);
-	this->SetIcon(wxIcon("IDI_ICON1"));
+	this->SetIcon(wxIcon("1_MAINICON"));
 
-	this->SetMinSize(wxSize(310, 235));
+	this->SetMinSize(wxSize(330, 255));
 
 	wxBoxSizer *ParentSizer;
 	ParentSizer = new wxBoxSizer(wxVERTICAL);
 
 	Panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
+	
 	wxGridBagSizer *Sizer;
 	Sizer = new wxGridBagSizer(0, 0);
 	Sizer->SetFlexibleDirection(wxBOTH);
@@ -32,6 +33,7 @@ EncryptDlg::EncryptDlg(wxWindow *parent, wxWindowID id, const wxString &title, c
 	TopContentSizer->AddGrowableRow(0);
 	TopContentSizer->AddGrowableRow(2);
 	TopContentSizer->AddGrowableRow(4);
+	TopContentSizer->AddGrowableRow(5);
 
 	m_PathLabel = new wxStaticText(TopSizer->GetStaticBox(), wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0);
 	m_PathLabel->Wrap(-1);
@@ -52,13 +54,21 @@ EncryptDlg::EncryptDlg(wxWindow *parent, wxWindowID id, const wxString &title, c
 	m_seperator = new wxStaticLine(TopSizer->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
 	TopContentSizer->Add(m_seperator, wxGBPosition(3, 0), wxGBSpan(1, 2), wxEXPAND | wxALL, 8);
 
-	m_TimeLabel = new wxStaticText(TopSizer->GetStaticBox(), wxID_ANY, wxT("Elapsed Time"), wxDefaultPosition, wxDefaultSize, 0);
-	m_TimeLabel->Wrap(-1);
-	TopContentSizer->Add(m_TimeLabel, wxGBPosition(4, 0), wxGBSpan(1, 1), wxALL, 5);
+	m_ElapsedTimeLabel = new wxStaticText(TopSizer->GetStaticBox(), wxID_ANY, wxT("Elapsed Time"), wxDefaultPosition, wxDefaultSize, 0);
+	m_ElapsedTimeLabel->Wrap(-1);
+	TopContentSizer->Add(m_ElapsedTimeLabel, wxGBPosition(4, 0), wxGBSpan(1, 1), wxALL, 5);
 
-	m_ElapseTimeText = new wxStaticText(TopSizer->GetStaticBox(), wxID_ANY, wxT("00:00:00"), wxDefaultPosition, wxDefaultSize, 0);
-	m_ElapseTimeText->Wrap(-1);
-	TopContentSizer->Add(m_ElapseTimeText, wxGBPosition(4, 1), wxGBSpan(1, 1), wxALIGN_RIGHT | wxALL, 5);
+	m_ElapsedTimeText = new wxStaticText(TopSizer->GetStaticBox(), wxID_ANY, wxT("00:00:00"), wxDefaultPosition, wxDefaultSize, 0);
+	m_ElapsedTimeText->Wrap(-1);
+	TopContentSizer->Add(m_ElapsedTimeText, wxGBPosition(4, 1), wxGBSpan(1, 1), wxALIGN_RIGHT | wxALL, 5);
+
+	m_RemainingTimeLabel = new wxStaticText(TopSizer->GetStaticBox(), wxID_ANY, wxT("Remaining Time"), wxDefaultPosition, wxDefaultSize, 0);
+	m_RemainingTimeLabel->Wrap(-1);
+	TopContentSizer->Add(m_RemainingTimeLabel, wxGBPosition(5, 0), wxGBSpan(1, 1), wxALL, 5);
+
+	m_RemainingTimeText = new wxStaticText(TopSizer->GetStaticBox(), wxID_ANY, wxT("00:00:00"), wxDefaultPosition, wxDefaultSize, 0);
+	m_RemainingTimeText->Wrap(-1);
+	TopContentSizer->Add(m_RemainingTimeText, wxGBPosition(5, 1), wxGBSpan(1, 1), wxALIGN_RIGHT | wxALL, 5);
 
 	TopSizer->Add(TopContentSizer, 1, wxALL | wxEXPAND, 5);
 
@@ -124,13 +134,47 @@ void EncryptDlg::Start() {
 		this->Close();
 	}
 
-	if (Password.empty() || Password.length() < 4 || Password.length() > 128) {
-		wxMessageBox("Password is important, please fill a valid one (min. 4, max. 128)", "Invalid password", wxICON_ERROR);
-		this->Close();
+	wxPasswordEntryDialog *passwordDialog = new wxPasswordEntryDialog(this, "Enter Password for\n" + fs::path(FilePath).filename().string(), "Enter Password", wxEmptyString, wxOK | wxCANCEL);
+	passwordDialog->CenterOnParent();
+
+	while (true) {
+		// Check if password is valid
+		if (Password.empty()) {
+			passwordDialog->SetValue(wxEmptyString);
+
+			if (passwordDialog->ShowModal() != wxID_OK) {
+				this->Close();
+			}
+
+			Password = passwordDialog->GetValue();
+
+			if (Password.empty()) {
+				wxMessageBox("Password is important, please fill a valid one.", "Invalid password", wxICON_ERROR);
+				continue;
+			}
+		}
+
+		// Check if password is correct for Decryption
+		if (!Encrypt) {
+			try {
+				if (!Glip::CheckPassword(FilePath, Password)) {
+					wxMessageBox("The password you entered is incorrect", "Incorrect password", wxICON_ERROR);
+					Password.clear();
+					continue;
+				}
+			}
+			catch (const std::exception &ex) {
+				wxMessageBox(ex.what(), "Unexpected error", wxICON_ERROR);
+				this->Close();
+			}
+		}
+
+		break;
 	}
 
 	std::string *Log = new std::string("");
 	Progress = new int(0);
+	ProcessedBytes = new double(0);
 
 	bool ExceptionOccurred = false;
 	int Value = 0;
@@ -169,7 +213,7 @@ void EncryptDlg::Start() {
 		StartTimer();
 
 		try {
-			std::future<int> fut = std::async(Glip::Encrypt, FilePath, Password, OutputPath, Log, Progress);
+			std::future<int> fut = std::async(Glip::Encrypt, FilePath, Password, OutputPath, Log, Progress, ProcessedBytes);
 			while (fut.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
 				wxYield();
 
@@ -217,17 +261,6 @@ void EncryptDlg::Start() {
 		}
 	}
 	else {
-		try {
-			if (!Glip::CheckPassword(FilePath, Password)) {
-				wxMessageBox("The password you entered is incorrect", "Incorrect password", wxICON_ERROR);
-				return;
-			}
-		}
-		catch (const std::exception &ex) {
-			wxMessageBox(ex.what(), "Unexpected error", wxICON_ERROR);
-			return;
-		}
-
 		OutputPath = FilePath.substr(0, FilePath.length() - 4);
 		if (fs::path(OutputPath).extension() == ".glp") {
 			wxMessageBox("Please fill a valid output path", "Invalid output", wxICON_ERROR);
@@ -263,7 +296,7 @@ void EncryptDlg::Start() {
 		StartTimer();
 
 		try {
-			std::future<int> fut = std::async(Glip::Decrypt, FilePath, Password, OutputPath, Log, Progress);
+			std::future<int> fut = std::async(Glip::Decrypt, FilePath, Password, OutputPath, Log, Progress, ProcessedBytes);
 			do {
 				wxYield();
 
@@ -320,7 +353,8 @@ void EncryptDlg::Start() {
 }
 
 std::string EncryptDlg::FormatTime(int s) {
-	s /= 10;
+	if (s < 0)
+		return "00:00:00";
 
 	int hours = 0, minutes = 0, seconds = s;
 
@@ -348,11 +382,14 @@ std::string EncryptDlg::FormatTime(int s) {
 
 void EncryptDlg::StartTimer() {
 	ElapsedTime = 0;
+	RemainingTime = 0;
+	RemainingBytes = fs::file_size(FilePath);
+
 	timer = new wxTimer(this, 13001);
 	timer->Start(100, false);
-	this->Connect(timer->GetId(), wxEVT_TIMER, wxTimerEventHandler(EncryptDlg::onTimerUpdate), NULL, this);
+	this->Connect(timer->GetId(), wxEVT_TIMER, wxTimerEventHandler(EncryptDlg::OnTimerUpdate), NULL, this);
 
-	progressIndicator = new wxAppProgressIndicator(this, 100);
+	ProgressIndicator = new wxAppProgressIndicator(this, 100);
 	isWorking = true;
 }
 
@@ -363,24 +400,35 @@ void EncryptDlg::StopTimer() {
 	timer->Stop();
 	this->Disconnect(timer->GetId(), wxEVT_TIMER);
 
-	progressIndicator->~wxAppProgressIndicator();
+	ProgressIndicator->~wxAppProgressIndicator();
 
 	isWorking = false;
 }
 
-void EncryptDlg::onTimerUpdate(wxTimerEvent &e) {
+void EncryptDlg::OnTimerUpdate(wxTimerEvent &e) {
 	if (isPaused)
 		return;
 
 	ElapsedTime++;
-	progressIndicator->SetValue(*Progress);
+
+	if (ElapsedTime % 10 == 0) {
+		m_ElapsedTimeText->SetLabelText(FormatTime(ElapsedTime / 10));		
+
+		if (*ProcessedBytes > 0) {
+			RemainingTime = (int)(RemainingBytes / *ProcessedBytes);
+			m_RemainingTimeText->SetLabelText(FormatTime(RemainingTime));
+			
+			RemainingBytes -= *ProcessedBytes;
+			*ProcessedBytes = 0;
+		}
+	}
 	
 	m_ProgressText->SetLabelText(std::to_string(*Progress) + "%");
 	m_ProgressBar->SetValue(*Progress);
 
-	this->Layout();
+	ProgressIndicator->SetValue(*Progress);
 
-	m_ElapseTimeText->SetLabelText(FormatTime(ElapsedTime));
+	this->Layout();
 
 	e.Skip();
 }
@@ -406,16 +454,22 @@ void EncryptDlg::OnPauseClicked(wxCommandEvent &e) {
 	if (isPaused) {
 		this->SetTitle("Paused");
 		m_PauseButton->SetLabel("Resume");
+
+		m_TaskText->SetLabelText("Paused");
 	}
 	else {
 		this->SetTitle(WindowTitle);
 		m_PauseButton->SetLabel("Pause");
+
+		m_TaskText->SetLabelText(Encrypt ? "Encrypting..." : "Decrypting...");
 	}
 }
 
 void EncryptDlg::OnCancelClicked(wxCommandEvent &e) {
 	if (!isCancelled) {
 		this->SetTitle("Cancelling...");
+		m_TaskText->SetLabelText("Cancelling...");
+
 		isCancelled = true;
 	}
 }
@@ -430,11 +484,6 @@ void EncryptDlg::OnWindowClose(wxCloseEvent &e) {
 	if (isWorking) {
 		if (isCancelled)
 			return;
-
-		int reponse = wxMessageBox("Are you sure you want to exit this process?", "Confirm", wxICON_QUESTION | wxYES_NO);
-		if (reponse == wxNO) {
-			return;
-		}
 
 		isCancelled = true;
 		return;
