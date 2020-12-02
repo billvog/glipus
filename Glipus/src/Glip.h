@@ -16,7 +16,7 @@ namespace fs = std::filesystem;
 #include <cryptopp/sha.h>
 #include <cryptopp/files.h>
 
-#define AES_BLOCK_SIZE 1024
+#define GLP_READ_BLOCK_SIZE 4096
 
 namespace Glip {
 	std::string RandPassword(int length, bool letters, bool numbers, bool special);

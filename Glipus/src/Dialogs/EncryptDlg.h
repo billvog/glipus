@@ -4,6 +4,7 @@
 #include <wx/statline.h>
 #include <wx/gbsizer.h>
 #include <wx/appprogress.h>
+#include <wx/richtooltip.h>
 
 #include <future>
 
@@ -16,7 +17,6 @@ public:
 
 	void SetInfo(const std::string &path, const std::string &password);
 	void Start();
-
 private:
 	std::string FilePath, Password, OutputPath;
 	bool Encrypt = true;
@@ -26,7 +26,8 @@ private:
 	std::string *Log = nullptr;
 	int *Progress = nullptr;
 	double *ProcessedBytes = nullptr, RemainingBytes = 0;
-	int ElapsedTime = 0, RemainingTime = 0;
+
+	int ElapsedTime = 0, PrevRemainingTime = 0, RemainingTime = 0;
 
 	bool isWorking = false, isCancelled = false, isPaused = false;
 
@@ -37,7 +38,6 @@ private:
 	void OnTimerUpdate(wxTimerEvent &e);
 
 	bool DeleteFileWithEx(const std::string &file);
-
 protected:
 	wxPanel *Panel;
 	wxStaticText *m_PathLabel;
@@ -52,7 +52,7 @@ protected:
 	wxButton *m_PauseButton;
 	wxButton *m_CancelButton;
 
-	wxTimer *timer = nullptr;
+	wxTimer *timer;
 	wxAppProgressIndicator *ProgressIndicator;
 
 	void OnPauseClicked(wxCommandEvent &e);

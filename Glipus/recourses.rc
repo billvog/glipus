@@ -1,10 +1,10 @@
 #include <windows.h>
-#include "src/version.h"
+#include "src/Version.h"
 
 1_MAINICON              ICON                    "assets/Icon.ico"
 2_ENCRYPTED_ICON        ICON                    "assets/Encrypted.ico"
-3_KEY_ICON              ICON                    "assets/Key.ico"
-4_UPDATE_ICON           ICON                    "assets/Update.ico"
+KEY_ICON                ICON                    "assets/Key.ico"
+UPDATE_ICON             ICON                    "assets/Update.ico"
 
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION     VER_FILEVERSION

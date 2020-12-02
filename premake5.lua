@@ -1,4 +1,4 @@
-workspace "Glipus"
+workspace "Glipus_Project"
 	configurations { "Debug", "Release" }
 	platforms { "Win32", "Win64" }
 
@@ -25,8 +25,8 @@ project "Glipus"
 	files {
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/Dialogs/**.cpp",
-		"%{prj.name}/src/Dialogs/**.h",
+		"%{prj.name}/src/Dialogs/*",
+		"%{prj.name}/src/Utils/*",
 		"%{prj.name}/**.rc",
 		"%{prj.name}/assets/**.ico",
 	}

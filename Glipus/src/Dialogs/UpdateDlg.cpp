@@ -33,7 +33,7 @@ UpdateDlg::UpdateDlg(wxWindow *parent, wxWindowID id, const wxString &title, con
 	m_ProgressText->Wrap(-1);
 	Sizer->Add(m_ProgressText, wxGBPosition(0, 1), wxGBSpan(1, 1), wxALL, 7);
 
-	m_ProgressBar = new wxGauge(Panel, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL | wxGA_SMOOTH);
+	m_ProgressBar = new wxGauge(Panel, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL);
 	m_ProgressBar->SetValue(0);
 	Sizer->Add(m_ProgressBar, wxGBPosition(1, 0), wxGBSpan(1, 2), wxALL | wxEXPAND, 5);
 

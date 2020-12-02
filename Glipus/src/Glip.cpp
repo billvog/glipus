@@ -91,9 +91,9 @@ namespace Glip {
         ));
 
         double FileSize = (double) fs::file_size(file);
-        int ProcessedBytes = 0;
-
-        while (FileSize > *processedBytes) {
+        double ProcessedBytes = 0;
+        
+        while (FileSize > ProcessedBytes && !Stream.GetStream()->eof()) {
             if (*log == "cmd-cancel") {
                 return 1;
             }
@@ -101,12 +101,16 @@ namespace Glip {
                 continue;
             }
 
-            Stream.Pump(AES_BLOCK_SIZE);
-            ProcessedBytes += AES_BLOCK_SIZE;
+            Stream.Pump(GLP_READ_BLOCK_SIZE);
 
-            *processedBytes += AES_BLOCK_SIZE;
+            ProcessedBytes += GLP_READ_BLOCK_SIZE;
+            *processedBytes += GLP_READ_BLOCK_SIZE;
 
-            *progress = std::clamp((int)((ProcessedBytes / FileSize) * 100), 0, 100);
+            int TmpProgress = (int) ((ProcessedBytes / FileSize) * 100);
+            if (TmpProgress < 0 || TmpProgress > 100)
+                TmpProgress = 100;
+
+            *progress = TmpProgress;
         }
 
         input_s.close();
@@ -155,7 +159,7 @@ namespace Glip {
 
         ProcessedBytes += 6;
 
-        while (FileSize > ProcessedBytes) {
+        while (FileSize > ProcessedBytes && !Stream.GetStream()->eof()) {
             if (*log == "cmd-cancel") {
                 return 1;
             }
@@ -163,15 +167,19 @@ namespace Glip {
                 continue;
             }
 
-            Stream.Pump(AES_BLOCK_SIZE);
-            ProcessedBytes += AES_BLOCK_SIZE;
-
-            *processedBytes += AES_BLOCK_SIZE;
-
+            Stream.Pump(GLP_READ_BLOCK_SIZE);
+            
             output_s << ss.str();
             ss.str("");
 
-            *progress = std::clamp((int)((ProcessedBytes / FileSize) * 100), 0, 100);
+            ProcessedBytes += GLP_READ_BLOCK_SIZE;
+            *processedBytes += GLP_READ_BLOCK_SIZE;
+
+            int TmpProgress = (int) ((ProcessedBytes / FileSize) * 100);
+            if (TmpProgress < 0 || TmpProgress > 100)
+                TmpProgress = 100;
+
+            *progress = TmpProgress;
         }
 
         input_s.close();
