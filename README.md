@@ -1,6 +1,6 @@
 # Glipus, to secure your files.
-Glipus is an open-source encryption software that uses AES 256-bit encryption.
-It helps you keep your files safe by simply clicking two buttons.
+Glipus is a tool to keep your files safe with strong AES 256-bit encryption.
+It's free and open-source software, licensed under GPLv3.
 
 Download from https://billvog.ga/#software
 
