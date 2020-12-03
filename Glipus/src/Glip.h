@@ -16,10 +16,11 @@ namespace fs = std::filesystem;
 #include <cryptopp/sha.h>
 #include <cryptopp/files.h>
 
-#define GLP_READ_BLOCK_SIZE 4096
+#define GLP_READ_BLOCK_SIZE 1024
 
 namespace Glip {
 	std::string RandPassword(int length, bool letters, bool numbers, bool special);
+	std::string HashPwd(const std::string &password);
 	bool CheckPassword(const std::string &file, const std::string &password);
 	int Encrypt(const std::string &file, const std::string &password, const std::string &output, std::string *log, int *progress, double *processedBytes);
 	int Decrypt(const std::string &file, const std::string &password, const std::string &output, std::string *log, int *progress, double *processedBytes);

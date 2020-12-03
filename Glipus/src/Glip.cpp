@@ -27,34 +27,36 @@ namespace Glip {
         return output.str();
     }
 
+    std::string HashPwd(const std::string &password) {
+        std::string digest;
+        CryptoPP::SHA256 hash;
+
+        CryptoPP::StringSource foo(password, true,
+            new CryptoPP::HashFilter(hash, new CryptoPP::StringSink(digest))
+        );
+
+        return digest;
+    }
+
     bool CheckPassword(const std::string &file, const std::string &password) {
         std::fstream input_s(file, std::ios::in | std::ios::out | std::ios::binary);
         if (!input_s.is_open()) {
             return false;
         }
 
-        CryptoPP::SecByteBlock key(CryptoPP::AES::MAX_KEYLENGTH + CryptoPP::AES::BLOCKSIZE);
+        std::string HashedPassword = HashPwd(password);
+
+        std::string str;
+        CryptoPP::FileSource Stream(input_s, false, new CryptoPP::StringSink(str));
         
-        std::string iv;
-
-        CryptoPP::FileSource Stream(input_s, false, new CryptoPP::StringSink(iv));
+        // Skip embedded IV
         Stream.Pump(16);
+        str.clear();
 
-        CryptoPP::HKDF<CryptoPP::SHA256> hkdf;
-        hkdf.DeriveKey(key, key.size(), (const CryptoPP::byte *)password.data(), password.size(), (const CryptoPP::byte *)iv.data(), iv.size(), NULL, 0);
-
-        CryptoPP::CTR_Mode<CryptoPP::AES>::Decryption decryption;
-        decryption.SetKeyWithIV(key, CryptoPP::AES::MAX_KEYLENGTH, key + CryptoPP::AES::MAX_KEYLENGTH);
-
-        std::stringstream ss;
-        Stream.Attach(new CryptoPP::StreamTransformationFilter(
-            decryption, new CryptoPP::FileSink(ss)
-        ));
-
-        Stream.Pump(6);
+        Stream.Pump(HashedPassword.length());
         input_s.close();
 
-        return (ss.str() == "Glipus");
+        return (str == HashedPassword);
     }
 
     int Encrypt(const std::string &file, const std::string &password, const std::string &output, std::string *log, int *progress, double *processedBytes) {
@@ -82,13 +84,13 @@ namespace Glip {
 
         CryptoPP::StringSource IVStream(iv, true, new CryptoPP::FileSink(output_s));
 
-        CryptoPP::StringSource HeaderStream("Glipus", true, new CryptoPP::StreamTransformationFilter(
-            encryption, new CryptoPP::FileSink(output_s)
-        ));
+        CryptoPP::StringSource HeaderStream(HashPwd(password), true, new CryptoPP::FileSink(output_s));
 
-        CryptoPP::FileSource Stream(input_s, false, new CryptoPP::StreamTransformationFilter(
+        CryptoPP::StreamTransformationFilter *OutFilter = new CryptoPP::StreamTransformationFilter(
             encryption, new CryptoPP::FileSink(output_s)
-        ));
+        );
+
+        CryptoPP::FileSource Stream(input_s, false, OutFilter);
 
         double FileSize = (double) fs::file_size(file);
         double ProcessedBytes = 0;
@@ -102,6 +104,7 @@ namespace Glip {
             }
 
             Stream.Pump(GLP_READ_BLOCK_SIZE);
+            OutFilter->Flush(false);
 
             ProcessedBytes += GLP_READ_BLOCK_SIZE;
             *processedBytes += GLP_READ_BLOCK_SIZE;
@@ -146,18 +149,17 @@ namespace Glip {
         CryptoPP::CTR_Mode<CryptoPP::AES>::Decryption decryption;
         decryption.SetKeyWithIV(key, CryptoPP::AES::MAX_KEYLENGTH, key + CryptoPP::AES::MAX_KEYLENGTH);
 
-        std::stringstream ss;
-        Stream.Attach(new CryptoPP::StreamTransformationFilter(
-            decryption, new CryptoPP::FileSink(ss)
-        ));
+        CryptoPP::StreamTransformationFilter *OutFilter = new CryptoPP::StreamTransformationFilter(
+            decryption, new CryptoPP::FileSink(output_s)
+        );
+
+        Stream.Attach(OutFilter);
 
         double FileSize = (double) fs::file_size(file);
         double ProcessedBytes = 16;
+        ProcessedBytes += HashPwd(password).length();
 
-        Stream.Pump(6);
-        ss.str("");
-
-        ProcessedBytes += 6;
+        input_s.seekg(ProcessedBytes, input_s._Seekbeg);
 
         while (FileSize > ProcessedBytes && !Stream.GetStream()->eof()) {
             if (*log == "cmd-cancel") {
@@ -168,9 +170,7 @@ namespace Glip {
             }
 
             Stream.Pump(GLP_READ_BLOCK_SIZE);
-            
-            output_s << ss.str();
-            ss.str("");
+            OutFilter->Flush(false);
 
             ProcessedBytes += GLP_READ_BLOCK_SIZE;
             *processedBytes += GLP_READ_BLOCK_SIZE;

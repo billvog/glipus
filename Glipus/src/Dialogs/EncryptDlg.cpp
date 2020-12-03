@@ -113,7 +113,7 @@ void EncryptDlg::SetInfo(const std::string &path, const std::string &password) {
 	FilePath = path;
 	Password = password;
 
-	Encrypt = (fs::path(FilePath).extension() != ".glp");
+	Encrypt = (wxString(fs::path(FilePath).extension().string()).MakeLower() != ".glp");
 
 	if (Encrypt) {
 		WindowTitle = "Encrypting " + fs::path(FilePath).filename().string();
@@ -434,7 +434,7 @@ void EncryptDlg::OnPauseClicked(wxCommandEvent &e) {
 	isPaused = !isPaused;
 
 	if (isPaused) {
-		this->SetTitle("Paused");
+		this->SetTitle("Paused. Press \"Resume\" to continue.");
 		m_PauseButton->SetLabel("Resume");
 
 		m_TaskText->SetLabelText("Paused");

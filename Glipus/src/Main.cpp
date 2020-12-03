@@ -216,7 +216,7 @@ void Main::ValidateFields() {
 	try {
 		fs::path fPath = fs::path(m_PathField->GetPath().ToStdString());
 		if (fs::exists(fPath) && fs::is_regular_file(fPath)) {
-			if (fPath.extension() == ".glp") {
+			if (wxString(fPath.extension().string()).MakeLower() == ".glp") {
 				m_EncryptButton->SetLabel("Decrypt");
 				Encrypt = false;
 			}
